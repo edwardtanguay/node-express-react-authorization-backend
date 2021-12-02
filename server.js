@@ -10,7 +10,14 @@ const app = express();
 const PORT = 3003;
 
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(
+	{
+		origin: 'http://localhost:3000',
+		credentials: true
+	}
+));
+
+
 app.use(express.json());
 app.use(
 	session({
@@ -56,22 +63,21 @@ const users = [
 app.post("/login", (req, res) => {
 	const username = req.body.username;
 	// const password = req.body.password;
-	const user = users.find(user => user.username === username);
-	if (user) {
-		req.session.user = user;
-		req.session.save();
-		res.json(JSON.stringify(user));
-	} else {
-		res.status(500).send("bad access");
+	let user = users.find(user => user.username === username);
+	if (!user) {
+		user = users.find(user => user.username === 'anonymousUser');
 	}
+	req.session.user = user;
+	req.session.save();
+	res.json(user);
 });
 
 app.get("/currentuser", (req, res) => {
-	if (req.session.user) {
-		res.json(req.session.user);
-	} else {
-		res.status(500).send("bad access");
+	let user = req.session.user;
+	if (!user) {
+		user = users.find(user => user.username === 'anonymousUser');
 	}
+	res.json(user);
 });
 
 app.get("/logout", (req, res) => {
