@@ -38,7 +38,7 @@ const users = [
 		username: "jj",
 		firstName: "James",
 		lastName: "JustSignedUpton",
-		accessGroups: "loggedInUsers,notApprovedUsers"
+		accessGroups: "loggedInUsers,members"
 	},
 	{
 		username: "aa",
@@ -56,7 +56,7 @@ const users = [
 		username: "ma",
 		firstName: "Mindy",
 		lastName: "Administraton",
-		accessGroups: "loggedInUsers, members, admins"
+		accessGroups: "loggedInUsers,members, admins"
 	}
 ];
 
@@ -82,7 +82,8 @@ app.get("/currentuser", (req, res) => {
 
 app.get("/logout", (req, res) => {
 	req.session.destroy();
-	res.status(200).send("User logged out");
+	const user = users.find(user => user.username === 'anonymousUser');
+	res.json(user);
 });
 
 app.listen(PORT, (req, res) => {
