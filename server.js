@@ -31,11 +31,11 @@ app.use(
 );
 
 app.post("/login", async (req, res) => {
-	const username = req.body.username;
+	const login = req.body.login;
 	// const password = req.body.password;
-	let user = await UserModel.findOne({ username: username });
+	let user = await UserModel.findOne({ login });
 	if (!user) {
-		user = await UserModel.findOne({ username: "anonymousUser" });
+		user = await UserModel.findOne({ login: "anonymousUser" });
 	}
 	req.session.user = user;
 	req.session.save();
@@ -52,9 +52,9 @@ app.get("/currentuser", async (req, res) => {
 	});
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", async (req, res) => {
 	req.session.destroy();
-	const user = users.find(user => user.username === 'anonymousUser');
+	const user = await UserModel.findOne({ login: "anonymousUser" });
 	res.json(user);
 });
 
