@@ -3,8 +3,12 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import mongoose from "mongoose";
+import UserModel from "./models/User.js";
 
 dotenv.config();
+
+mongoose.connect(process.env.MONGODB_URI);
 
 const app = express();
 const PORT = 3003;
@@ -12,11 +16,10 @@ const PORT = 3003;
 app.use(cookieParser());
 app.use(cors(
 	{
-		origin: 'http://localhost:3000',
+		origin: 'http://localhost:3001',
 		credentials: true
 	}
 ));
-
 
 app.use(express.json());
 app.use(
@@ -27,57 +30,26 @@ app.use(
 	})
 );
 
-const users = [
-	{
-		username: "anonymousUser",
-		firstName: "Anonymous",
-		lastName: "User",
-		accessGroups: "loggedOutUsers"
-	},
-	{
-		username: "jj",
-		firstName: "James",
-		lastName: "JustSignedUpton",
-		accessGroups: "loggedInUsers,members"
-	},
-	{
-		username: "aa",
-		firstName: "Ashley",
-		lastName: "Approvedmemberton",
-		accessGroups: "loggedInUsers, members"
-	},
-	{
-		username: "kc",
-		firstName: "Kyle",
-		lastName: "ContentEditorton",
-		accessGroups: "loggedInUsers, members, contentEditors"
-	},
-	{
-		username: "ma",
-		firstName: "Mindy",
-		lastName: "Administraton",
-		accessGroups: "loggedInUsers,members, admins"
-	}
-];
-
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
 	const username = req.body.username;
 	// const password = req.body.password;
-	let user = users.find(user => user.username === username);
+	let user = await UserModel.findOne({ username: username });
 	if (!user) {
-		user = users.find(user => user.username === 'anonymousUser');
+		user = await UserModel.findOne({ username: "anonymousUser" });
 	}
 	req.session.user = user;
 	req.session.save();
 	res.json(user);
 });
 
-app.get("/currentuser", (req, res) => {
+app.get("/currentuser", async (req, res) => {
 	let user = req.session.user;
 	if (!user) {
-		user = users.find(user => user.username === 'anonymousUser');
+		user = await UserModel.findOne({ login: "anonymousUser" });
 	}
-	res.json(user);
+	res.json({
+		user
+	});
 });
 
 app.get("/logout", (req, res) => {
